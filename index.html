@@ -17,78 +17,60 @@
       from { opacity: 0; transform: translateY(-6px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .fade-in { animation: fadeSlideIn 0.18s ease-out both; }
-
-    /* Custom focus ring matching design system */
-    .focus-ink:focus {
-      outline: 2px solid #1A1A1A;
-      outline-offset: 2px;
-    }
-    input[type="date"]::-webkit-calendar-picker-indicator {
-      opacity: 0.5;
-      cursor: pointer;
-    }
-    /* Stepper buttons */
-    .qty-btn { transition: background-color 0.12s; }
+    .fade-in  { animation: fadeSlideIn 0.18s ease-out both; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { animation: spin 0.8s linear infinite; }
     .qty-btn:hover { background-color: #F1EFE8; }
-
-    /* Distance chip checked state handled inline via peer */
-
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+    .pulse-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
     @media print {
       .no-print { display: none !important; }
       body { background: #fff; }
       #booking-result { box-shadow: none !important; border: 1px solid #ddd; }
     }
     ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 4px; }
   </style>
   <script>
     tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            canvas: 'rgb(249,249,247)',
-            ink: '#1A1A1A',
-            muted: '#888780',
-            accent: '#F1EFE8',
-          },
-          boxShadow: {
-            card: '0 1px 3px rgba(0,0,0,0.10)',
-          }
-        }
-      }
+      theme: { extend: {
+        colors: { ink: '#1A1A1A', muted: '#888780', accent: '#F1EFE8' },
+        boxShadow: { card: '0 1px 3px rgba(0,0,0,0.10)' }
+      }}
     }
   </script>
 </head>
 
 <body class="min-h-screen antialiased">
 
-  <!-- ═══════════════ HEADER ═══════════════ -->
+  <!-- ═══ HEADER ═══ -->
   <header class="bg-white border-b border-black/[0.12] sticky top-0 z-50 no-print">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
       <div class="flex items-center gap-2.5">
         <div class="w-7 h-7 bg-[#1A1A1A] rounded-lg flex items-center justify-center flex-shrink-0">
-          <!-- snowflake / AC icon -->
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="2" x2="12" y2="22"/>
-            <path d="M17 7 12 2 7 7"/>
-            <path d="M17 17 12 22 7 17"/>
+            <path d="M17 7 12 2 7 7"/><path d="M17 17 12 22 7 17"/>
             <line x1="2" y1="12" x2="22" y2="12"/>
-            <path d="M7 7 2 12 7 17"/>
-            <path d="M17 7 22 12 17 17"/>
+            <path d="M7 7 2 12 7 17"/><path d="M17 7 22 12 17 17"/>
           </svg>
         </div>
         <span class="font-semibold text-[15px] text-ink">Popupza Air Service</span>
       </div>
-      <span class="text-[12px] text-muted font-medium hidden sm:block">ระบบจองบริการแอร์</span>
+      <div class="flex items-center gap-2">
+        <!-- Live pricing status badge -->
+        <div id="status-badge" class="hidden items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-full border"></div>
+        <span class="text-[12px] text-muted font-medium hidden sm:block">ระบบจองบริการแอร์</span>
+      </div>
     </div>
   </header>
 
-  <!-- ═══════════════ MAIN ═══════════════ -->
+  <!-- ═══ MAIN ═══ -->
   <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
-    <!-- Page heading -->
     <div class="mb-7">
       <h1 class="text-[23px] font-semibold text-ink">จองบริการแอร์</h1>
       <p class="text-[14px] text-muted mt-1">เลือกบริการ กรอกข้อมูลลูกค้า และวันนัดหมาย ระบบจะคำนวนราคาให้อัตโนมัติ</p>
@@ -96,7 +78,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start">
 
-      <!-- ─────── LEFT COLUMN: FORM ─────── -->
+      <!-- ─── LEFT: FORM ─── -->
       <div class="space-y-5 no-print">
 
         <!-- SECTION 1: SERVICE ITEMS -->
@@ -104,19 +86,38 @@
           <div class="flex items-center justify-between mb-5">
             <div class="flex items-center gap-2.5">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="3" width="20" height="14" rx="2"/>
-                <path d="M8 21h8m-4-4v4"/>
+                <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/>
               </svg>
               <h2 class="text-[18px] font-semibold text-ink">รายการบริการ</h2>
             </div>
-            <button onclick="addServiceItem()"
-              class="no-print flex items-center gap-1.5 px-3.5 py-1.5 bg-ink text-white text-[13px] font-medium rounded-lg hover:bg-ink/90 active:scale-95 transition-all focus-ink">
+            <button id="add-item-btn" onclick="addServiceItem()" disabled
+              class="no-print flex items-center gap-1.5 px-3.5 py-1.5 bg-ink text-white text-[13px] font-medium rounded-lg
+                     hover:bg-ink/90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               เพิ่มรายการ
             </button>
           </div>
 
-          <div id="service-items" class="space-y-3"></div>
+          <!-- Loading skeleton -->
+          <div id="pricing-loading" class="border border-dashed border-black/[0.15] rounded-xl p-8 text-center">
+            <svg class="spin mx-auto mb-3 text-muted" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            <p class="text-[13px] text-muted">กำลังโหลดข้อมูลราคาจาก Google Sheets…</p>
+          </div>
+
+          <!-- Error state -->
+          <div id="pricing-error" class="hidden border border-dashed border-red-200 rounded-xl p-6 text-center bg-red-50/50">
+            <svg class="mx-auto mb-2 text-red-400" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/>
+            </svg>
+            <p class="text-[13px] text-red-600 font-medium mb-1">โหลดข้อมูลราคาไม่สำเร็จ</p>
+            <p class="text-[12px] text-red-400 mb-3">ใช้ราคาเริ่มต้น (fallback) แทน</p>
+            <button onclick="fetchPricing()" class="text-[12px] font-medium text-ink underline underline-offset-2 hover:text-ink/70">ลองใหม่</button>
+          </div>
+
+          <!-- Service items list -->
+          <div id="service-items" class="hidden space-y-3"></div>
 
           <!-- Empty state -->
           <div id="empty-service" class="hidden border border-dashed border-black/[0.15] rounded-xl p-8 text-center">
@@ -136,36 +137,31 @@
             </svg>
             <h2 class="text-[18px] font-semibold text-ink">ข้อมูลลูกค้า</h2>
           </div>
-
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="sm:col-span-2">
               <label class="block text-[14px] font-medium text-ink mb-1.5">ชื่อ–นามสกุล <span class="text-red-400">*</span></label>
               <input type="text" id="customer-name" placeholder="กรอกชื่อ–นามสกุลลูกค้า"
-                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] placeholder:text-muted bg-white
-                       focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all">
+                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] placeholder:text-muted bg-white focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all">
             </div>
             <div>
               <label class="block text-[14px] font-medium text-ink mb-1.5">เบอร์โทรศัพท์ <span class="text-red-400">*</span></label>
               <input type="tel" id="customer-phone" placeholder="08X-XXX-XXXX"
-                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] placeholder:text-muted bg-white
-                       focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all">
+                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] placeholder:text-muted bg-white focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all">
             </div>
             <div>
               <label class="block text-[14px] font-medium text-ink mb-1.5">Line ID / อีเมล</label>
               <input type="text" id="customer-contact" placeholder="ไม่บังคับ"
-                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] placeholder:text-muted bg-white
-                       focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all">
+                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] placeholder:text-muted bg-white focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all">
             </div>
             <div class="sm:col-span-2">
               <label class="block text-[14px] font-medium text-ink mb-1.5">ที่อยู่ / สถานที่ให้บริการ <span class="text-red-400">*</span></label>
               <textarea id="customer-address" rows="2" placeholder="บ้านเลขที่ ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด"
-                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] placeholder:text-muted bg-white
-                       focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all resize-none"></textarea>
+                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] placeholder:text-muted bg-white focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all resize-none"></textarea>
             </div>
           </div>
         </div>
 
-        <!-- SECTION 3: DATETIME & DISTANCE -->
+        <!-- SECTION 3: DATE / TIME / DISTANCE -->
         <div class="bg-white rounded-xl shadow-card p-6">
           <div class="flex items-center gap-2.5 mb-5">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
@@ -173,52 +169,39 @@
             </svg>
             <h2 class="text-[18px] font-semibold text-ink">วัน เวลา และระยะทาง</h2>
           </div>
-
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Date -->
             <div>
               <label class="block text-[14px] font-medium text-ink mb-1.5">วันที่นัดหมาย <span class="text-red-400">*</span></label>
               <input type="date" id="booking-date"
-                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] bg-white
-                       focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all">
+                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] bg-white focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all">
             </div>
-            <!-- Time -->
             <div>
               <label class="block text-[14px] font-medium text-ink mb-1.5">เวลา <span class="text-red-400">*</span></label>
               <select id="booking-time"
-                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] bg-white
-                       focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all">
+                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] bg-white focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all">
                 <option value="">-- เลือกเวลา --</option>
               </select>
             </div>
-            <!-- Distance -->
             <div class="sm:col-span-2">
-              <label class="block text-[14px] font-medium text-ink mb-2">
-                ระยะทางจากร้านถึงสถานที่ <span class="text-red-400">*</span>
-              </label>
+              <label class="block text-[14px] font-medium text-ink mb-2">ระยะทางจากร้านถึงสถานที่ <span class="text-red-400">*</span></label>
               <div id="distance-grid" class="grid grid-cols-2 sm:grid-cols-5 gap-2"></div>
             </div>
-            <!-- Note -->
             <div class="sm:col-span-2">
               <label class="block text-[14px] font-medium text-ink mb-1.5">หมายเหตุเพิ่มเติม</label>
               <textarea id="booking-note" rows="2" placeholder="เช่น รายละเอียดพิเศษ สิ่งที่ต้องเตรียม ฯลฯ"
-                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] placeholder:text-muted bg-white
-                       focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all resize-none"></textarea>
+                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[14px] placeholder:text-muted bg-white focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all resize-none"></textarea>
             </div>
           </div>
         </div>
 
         <!-- SUBMIT -->
         <button onclick="createBooking()"
-          class="no-print w-full h-12 bg-ink text-white text-[14px] font-semibold rounded-lg
-                 hover:bg-ink/90 active:scale-[0.99] transition-all
-                 focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2">
+          class="no-print w-full h-12 bg-ink text-white text-[14px] font-semibold rounded-lg hover:bg-ink/90 active:scale-[0.99] transition-all focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2">
           ยืนยันการจองและคำนวนราคา
         </button>
+      </div>
 
-      </div><!-- end left col -->
-
-      <!-- ─────── RIGHT COLUMN: SUMMARY ─────── -->
+      <!-- ─── RIGHT: SUMMARY ─── -->
       <div class="lg:sticky lg:top-[72px] space-y-4">
 
         <!-- Live price card -->
@@ -230,13 +213,11 @@
             </svg>
             <h2 class="text-[18px] font-semibold text-ink">สรุปค่าบริการ</h2>
           </div>
-
           <div id="price-breakdown">
             <div class="border border-dashed border-black/[0.15] rounded-xl p-6 text-center">
               <p class="text-[13px] text-muted">เพิ่มรายการบริการเพื่อดูราคาประมาณ</p>
             </div>
           </div>
-
           <div id="price-total" class="hidden mt-4 pt-4 border-t border-black/[0.08] flex items-baseline justify-between">
             <span class="text-[14px] font-medium text-ink">รวมทั้งสิ้น</span>
             <span id="total-amount" class="text-[24px] font-semibold text-ink">฿0</span>
@@ -244,38 +225,61 @@
           <p id="price-note" class="hidden text-[11px] text-muted mt-1.5">* ราคาอาจเปลี่ยนแปลงตามสภาพจริงหน้างาน</p>
         </div>
 
-        <!-- Booking confirmation card (hidden until submitted) -->
+        <!-- Pricing source card -->
+        <div class="bg-white rounded-xl shadow-card p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#888780" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span class="text-[13px] font-medium text-muted">แหล่งข้อมูลราคา</span>
+            </div>
+            <button onclick="fetchPricing()" id="refresh-btn"
+              class="no-print w-7 h-7 flex items-center justify-center text-muted hover:text-ink hover:bg-accent rounded-lg transition-colors" title="รีเฟรชราคา">
+              <svg id="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- status row -->
+          <div id="source-status" class="flex items-center gap-2 mb-2">
+            <span class="pulse-dot w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span>
+            <span class="text-[12px] text-muted">กำลังโหลด Google Sheets…</span>
+          </div>
+
+          <p class="text-[11px] text-muted/70" id="last-updated-text"></p>
+
+          <!-- Pricing table preview -->
+          <div id="pricing-preview" class="hidden mt-3 overflow-x-auto">
+            <table id="pricing-table" class="w-full text-[11px] border-collapse"></table>
+          </div>
+        </div>
+
+        <!-- Booking result -->
         <div id="booking-result" class="hidden bg-white rounded-xl shadow-card p-5">
-          <!-- header -->
           <div class="flex items-center gap-2.5 mb-4">
             <div class="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <h2 class="text-[18px] font-semibold text-ink">ยืนยันการจองแล้ว</h2>
           </div>
-
-          <!-- Booking number badge -->
           <div class="bg-accent rounded-xl px-4 py-4 mb-5 text-center">
             <p class="text-[11px] font-medium text-muted mb-1 uppercase tracking-wider">หมายเลขการจอง</p>
             <p id="booking-number" class="text-[22px] font-semibold text-ink tracking-[0.18em]"></p>
           </div>
-
-          <!-- Details -->
-          <div id="booking-details" class="text-[13px] space-y-0"></div>
-
-          <!-- Action buttons -->
+          <div id="booking-details" class="text-[13px]"></div>
           <div class="mt-5 space-y-2 no-print">
             <button onclick="printBooking()"
-              class="w-full h-10 bg-white text-ink text-[13px] font-medium border border-black/[0.12] rounded-lg
-                     hover:bg-accent transition-colors flex items-center justify-center gap-2">
+              class="w-full h-10 bg-white text-ink text-[13px] font-medium border border-black/[0.12] rounded-lg hover:bg-accent transition-colors flex items-center justify-center gap-2">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
               </svg>
               พิมพ์ใบจอง
             </button>
             <button onclick="resetForm()"
-              class="w-full h-10 bg-ink text-white text-[13px] font-medium rounded-lg
-                     hover:bg-ink/90 transition-colors flex items-center justify-center gap-2">
+              class="w-full h-10 bg-ink text-white text-[13px] font-medium rounded-lg hover:bg-ink/90 transition-colors flex items-center justify-center gap-2">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
                 <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>
@@ -285,29 +289,37 @@
           </div>
         </div>
 
-      </div><!-- end right col -->
-
-    </div><!-- end grid -->
+      </div><!-- end right -->
+    </div>
   </main>
 
-  <!-- Toast container -->
   <div id="toast-container" class="fixed bottom-6 inset-x-4 flex justify-center z-50 pointer-events-none no-print"></div>
 
-  <!-- ═══════════════ SCRIPT ═══════════════ -->
+  <!-- ═══ SCRIPT ═══ -->
   <script>
-    // ─── PRICING DATA ───
-    const SERVICES = {
+    // ─── CONFIG ───────────────────────────────────────────────
+    const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSXP1tkgA7mO-SQb1n47Fq8rcaNJxCHqQ6mUfE9UZ_XrQQOhPjJFkifezjZ2f1H6jes3LayXXXO3pRw/pub?output=csv';
+    const AUTO_REFRESH_MS = 3 * 60 * 1000; // 3 minutes
+
+    // Fallback prices (used if sheet unreachable)
+    const FALLBACK_SERVICES = {
       wash:    { label: 'ล้างแอร์',     prices: { '9000': 500,  '12000': 600,  '18000': 800,  '24000': 1000 } },
       repair:  { label: 'ซ่อมแอร์',    prices: { '9000': 800,  '12000': 1000, '18000': 1200, '24000': 1500 } },
       install: { label: 'ติดตั้งแอร์', prices: { '9000': 1500, '12000': 1800, '18000': 2200, '24000': 2800 } },
     };
-
-    const AC_SIZES = [
+    const FALLBACK_SIZES = [
       { val: '9000',  label: '9,000 BTU'  },
       { val: '12000', label: '12,000 BTU' },
       { val: '18000', label: '18,000 BTU' },
       { val: '24000', label: '24,000 BTU' },
     ];
+
+    // Map English/shorthand keys → Thai display labels
+    const SERVICE_LABEL_MAP = {
+      wash: 'ล้างแอร์', clean: 'ล้างแอร์',
+      repair: 'ซ่อมแอร์', fix: 'ซ่อมแอร์',
+      install: 'ติดตั้งแอร์', installation: 'ติดตั้งแอร์',
+    };
 
     const DISTANCES = [
       { val: '0',  label: '0–5 กม.',   fee: 0   },
@@ -317,64 +329,235 @@
       { val: '30', label: '30+ กม.',   fee: 500 },
     ];
 
-    // ─── STATE ───
-    let items = [];
-    let seq   = 0;
-    let dist  = null;   // selected distance value string
+    // ─── DYNAMIC STATE (from sheet) ───────────────────────────
+    let SERVICES  = {};   // { key: { label, prices: { btu: price } } }
+    let AC_SIZES  = [];   // [{ val, label }]
+    let loadState = 'idle'; // 'loading' | 'ok' | 'fallback' | 'error'
+    let lastUpdated = null;
 
-    // ─── INIT ───
-    document.addEventListener('DOMContentLoaded', () => {
-      buildDistanceGrid();
-      buildTimeSlots();
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('booking-date').min   = today;
-      document.getElementById('booking-date').value = today;
-      addServiceItem();
-    });
+    // ─── APP STATE ────────────────────────────────────────────
+    let items = [], seq = 0, dist = null;
 
-    // ─── DISTANCE GRID ───
+    // ─── CSV PARSER ───────────────────────────────────────────
+    function parseCSV(raw) {
+      // Strip BOM, normalise line endings
+      raw = raw.replace(/^﻿/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      const result = [];
+      for (const line of raw.trim().split('\n')) {
+        const cols = [];
+        let cur = '', inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') { inQ = !inQ; continue; }
+          if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; continue; }
+          cur += ch;
+        }
+        cols.push(cur.trim());
+        result.push(cols);
+      }
+      return result;
+    }
+
+    // ─── BUILD PRICING FROM CSV ROWS ─────────────────────────
+    // Expected CSV layout:
+    //   Row 0 (header): "BTU/บริการ" | "6000" | "9000" | "12000" | ...
+    //   Row 1+        : "wash"       | 700    | 900    | 1100    | ...
+    function buildPricing(rows) {
+      if (!rows || rows.length < 2) return false;
+
+      const header = rows[0];
+      // Extract BTU columns (cols 1 onward — strip non-numeric chars)
+      const btus = header.slice(1)
+        .map(h => String(h).replace(/[^0-9]/g, ''))
+        .filter(h => h.length > 0);
+
+      if (btus.length === 0) return false;
+
+      const services = {};
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row[0] || !row[0].trim()) continue;
+
+        const rawKey = row[0].trim();
+        const key    = rawKey.toLowerCase();
+        const label  = SERVICE_LABEL_MAP[key] || rawKey;
+
+        const prices = {};
+        btus.forEach((btu, idx) => {
+          const raw = String(row[idx + 1] || '').replace(/[^0-9.]/g, '');
+          const p   = parseFloat(raw);
+          if (!isNaN(p) && p > 0) prices[btu] = p;
+        });
+
+        if (Object.keys(prices).length > 0) {
+          services[key] = { label, prices };
+        }
+      }
+
+      if (Object.keys(services).length === 0) return false;
+
+      SERVICES = services;
+      AC_SIZES = btus.map(b => ({
+        val: b,
+        label: parseInt(b, 10).toLocaleString('th-TH') + ' BTU',
+      }));
+      return true;
+    }
+
+    // ─── FETCH PRICING ────────────────────────────────────────
+    async function fetchPricing() {
+      loadState = 'loading';
+      setRefreshSpinning(true);
+      updateSourceCard();
+
+      try {
+        const res = await fetch(SHEET_CSV_URL, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const text = await res.text();
+        const rows = parseCSV(text);
+        const ok   = buildPricing(rows);
+
+        if (ok) {
+          loadState   = 'ok';
+          lastUpdated = new Date();
+        } else {
+          // CSV parsed but wrong format — use fallback
+          SERVICES = FALLBACK_SERVICES;
+          AC_SIZES = FALLBACK_SIZES;
+          loadState = 'fallback';
+          lastUpdated = new Date();
+        }
+      } catch (err) {
+        // Network error — use fallback
+        SERVICES = FALLBACK_SERVICES;
+        AC_SIZES = FALLBACK_SIZES;
+        loadState   = 'fallback';
+        lastUpdated = new Date();
+        console.warn('Pricing fetch failed, using fallback:', err.message);
+      }
+
+      setRefreshSpinning(false);
+      onPricingReady();
+    }
+
+    function onPricingReady() {
+      // Validate existing items against new pricing
+      items.forEach(it => {
+        if (!SERVICES[it.service]) it.service = Object.keys(SERVICES)[0];
+        if (!SERVICES[it.service]?.prices[it.size]) it.size = AC_SIZES[0]?.val;
+      });
+
+      // Show/enable UI
+      document.getElementById('pricing-loading').classList.add('hidden');
+      document.getElementById('pricing-error').classList.add('hidden');
+      document.getElementById('service-items').classList.remove('hidden');
+      document.getElementById('add-item-btn').disabled = false;
+
+      if (items.length === 0) addServiceItem();
+      else { renderItems(); refreshPriceSummary(); }
+
+      updateSourceCard();
+    }
+
+    // ─── SOURCE CARD ──────────────────────────────────────────
+    function updateSourceCard() {
+      const statusEl = document.getElementById('source-status');
+      const updEl    = document.getElementById('last-updated-text');
+      const badge    = document.getElementById('status-badge');
+      const preview  = document.getElementById('pricing-preview');
+
+      const dots = {
+        loading:  'bg-amber-400 pulse-dot',
+        ok:       'bg-emerald-500',
+        fallback: 'bg-orange-400',
+        error:    'bg-red-400',
+      };
+      const texts = {
+        loading:  'กำลังโหลด Google Sheets…',
+        ok:       'ราคาจาก Google Sheets ✓',
+        fallback: 'ใช้ราคาเริ่มต้น (ชีตไม่พร้อมใช้งาน)',
+        error:    'โหลดข้อมูลไม่สำเร็จ',
+      };
+
+      statusEl.innerHTML = `
+        <span class="w-2 h-2 rounded-full flex-shrink-0 ${dots[loadState] || dots.loading}"></span>
+        <span class="text-[12px] text-muted">${texts[loadState] || texts.loading}</span>
+      `;
+
+      if (lastUpdated) {
+        updEl.textContent = 'อัปเดตล่าสุด: ' + lastUpdated.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }
+
+      // Header badge
+      if (loadState === 'ok') {
+        badge.className = 'flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200';
+        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Live';
+      } else if (loadState === 'loading') {
+        badge.className = 'flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-full border bg-amber-50 text-amber-700 border-amber-200';
+        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 pulse-dot"></span>โหลด…';
+      } else {
+        badge.className = 'flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-full border bg-orange-50 text-orange-700 border-orange-200';
+        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>Fallback';
+      }
+
+      // Pricing table preview
+      if (Object.keys(SERVICES).length > 0 && AC_SIZES.length > 0) {
+        preview.classList.remove('hidden');
+        const table = document.getElementById('pricing-table');
+        const thCells = AC_SIZES.map(s => `<th class="px-2 py-1 font-medium text-muted/70 text-right">${s.label}</th>`).join('');
+        const rows = Object.entries(SERVICES).map(([, svc]) => {
+          const tds = AC_SIZES.map(s => `<td class="px-2 py-1 text-right text-ink">${svc.prices[s.val] ? '฿' + svc.prices[s.val].toLocaleString() : '–'}</td>`).join('');
+          return `<tr class="border-t border-black/[0.06]"><td class="py-1 font-medium text-ink pr-2">${svc.label}</td>${tds}</tr>`;
+        }).join('');
+        table.innerHTML = `
+          <thead><tr class="border-b border-black/[0.08]">
+            <th class="py-1 text-left font-medium text-muted/70">บริการ</th>${thCells}
+          </tr></thead>
+          <tbody>${rows}</tbody>`;
+      }
+    }
+
+    function setRefreshSpinning(on) {
+      const icon = document.getElementById('refresh-icon');
+      if (on) icon.classList.add('spin');
+      else    icon.classList.remove('spin');
+    }
+
+    // ─── DISTANCE GRID ────────────────────────────────────────
     function buildDistanceGrid() {
-      const grid = document.getElementById('distance-grid');
-      grid.innerHTML = DISTANCES.map(d => `
+      document.getElementById('distance-grid').innerHTML = DISTANCES.map(d => `
         <label class="cursor-pointer select-none">
-          <input type="radio" name="distance" value="${d.val}"
-            onchange="onDistanceChange('${d.val}')"
-            class="sr-only peer">
+          <input type="radio" name="distance" value="${d.val}" onchange="onDistanceChange('${d.val}')" class="sr-only peer">
           <div class="peer-checked:bg-ink peer-checked:text-white peer-checked:border-ink
-                      border border-black/[0.12] rounded-lg p-2.5 text-center
-                      transition-colors hover:bg-accent">
+                      border border-black/[0.12] rounded-lg p-2.5 text-center transition-colors hover:bg-accent">
             <div class="text-[13px] font-medium">${d.label}</div>
             <div class="text-[11px] mt-0.5 opacity-60">${d.fee === 0 ? 'ฟรี' : '+฿' + d.fee.toLocaleString()}</div>
           </div>
-        </label>
-      `).join('');
+        </label>`).join('');
     }
 
-    function onDistanceChange(val) {
-      dist = val;
-      refreshPriceSummary();
-    }
+    function onDistanceChange(val) { dist = val; refreshPriceSummary(); }
 
-    // ─── TIME SLOTS ───
+    // ─── TIME SLOTS ───────────────────────────────────────────
     function buildTimeSlots() {
       const sel = document.getElementById('booking-time');
       for (let h = 8; h <= 18; h++) {
         for (let m = 0; m < 60; m += 30) {
           if (h === 18 && m > 0) break;
-          const hh = String(h).padStart(2, '0');
-          const mm = String(m).padStart(2, '0');
           const opt = document.createElement('option');
-          opt.value       = `${hh}:${mm}`;
-          opt.textContent = `${hh}:${mm} น.`;
+          opt.value = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+          opt.textContent = opt.value + ' น.';
           sel.appendChild(opt);
         }
       }
     }
 
-    // ─── SERVICE ITEMS ───
+    // ─── SERVICE ITEMS ────────────────────────────────────────
     function addServiceItem() {
       seq++;
-      items.push({ id: seq, service: 'wash', size: '12000', qty: 1 });
+      const firstKey  = Object.keys(SERVICES)[0] || 'wash';
+      const firstSize = AC_SIZES[0]?.val || '9000';
+      items.push({ id: seq, service: firstKey, size: firstSize, qty: 1 });
       renderItems();
       refreshPriceSummary();
     }
@@ -388,15 +571,15 @@
     function setField(id, field, rawVal) {
       const it = items.find(i => i.id === id);
       if (!it) return;
-      if (field === 'qty') {
-        it.qty = Math.max(1, Math.min(20, parseInt(rawVal) || 1));
-      } else {
-        it[field] = rawVal;
+      if (field === 'qty') it.qty = Math.max(1, Math.min(20, parseInt(rawVal) || 1));
+      else it[field] = rawVal;
+      // Update price badge without full re-render
+      const badge = document.getElementById('item-price-' + id);
+      if (badge && SERVICES[it.service]) {
+        const p = (SERVICES[it.service].prices[it.size] || 0) * it.qty;
+        badge.textContent = '฿' + p.toLocaleString();
       }
       refreshPriceSummary();
-      // Re-render just the price badge for this item
-      const badge = document.getElementById('item-price-' + id);
-      if (badge) badge.textContent = '฿' + (SERVICES[it.service].prices[it.size] * it.qty).toLocaleString();
     }
 
     function stepQty(id, delta) {
@@ -411,75 +594,60 @@
     function renderItems() {
       const container = document.getElementById('service-items');
       const empty     = document.getElementById('empty-service');
-
-      if (items.length === 0) {
-        container.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
-      }
+      if (items.length === 0) { container.innerHTML = ''; empty.classList.remove('hidden'); return; }
       empty.classList.add('hidden');
 
       container.innerHTML = items.map((it, idx) => {
-        const unitPrice = SERVICES[it.service].prices[it.size];
+        const svc      = SERVICES[it.service] || Object.values(SERVICES)[0];
+        const unitPrice = svc?.prices[it.size] || 0;
+
+        const svcOptions = Object.entries(SERVICES).map(([k, v]) =>
+          `<option value="${k}" ${it.service === k ? 'selected' : ''}>${v.label}</option>`).join('');
+
+        const sizeOptions = AC_SIZES.map(s =>
+          `<option value="${s.val}" ${it.size === s.val ? 'selected' : ''}>${s.label}</option>`).join('');
+
         return `
-        <div class="fade-in border border-black/[0.08] rounded-xl p-4 bg-[rgb(249,249,247)]" id="item-row-${it.id}">
+        <div class="fade-in border border-black/[0.08] rounded-xl p-4 bg-[rgb(249,249,247)]">
           <div class="flex items-center justify-between mb-3">
             <span class="text-[12px] font-medium text-muted uppercase tracking-wide">รายการที่ ${idx + 1}</span>
             ${items.length > 1 ? `
-              <button onclick="removeItem(${it.id})"
-                class="w-6 h-6 flex items-center justify-center text-muted hover:text-ink hover:bg-white rounded-md transition-colors">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
+              <button onclick="removeItem(${it.id})" class="w-6 h-6 flex items-center justify-center text-muted hover:text-ink hover:bg-white rounded-md transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>` : ''}
           </div>
-
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <!-- Service type -->
             <div>
               <label class="block text-[12px] font-medium text-ink mb-1.5">ประเภทบริการ</label>
               <select onchange="setField(${it.id},'service',this.value)"
-                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[13px] bg-white
-                       focus:outline-none focus:ring-2 focus:ring-ink transition-all">
-                ${Object.entries(SERVICES).map(([k, v]) =>
-                  `<option value="${k}" ${it.service === k ? 'selected' : ''}>${v.label}</option>`
-                ).join('')}
+                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-ink transition-all">
+                ${svcOptions}
               </select>
             </div>
-            <!-- AC size -->
             <div>
               <label class="block text-[12px] font-medium text-ink mb-1.5">ขนาดแอร์</label>
               <select onchange="setField(${it.id},'size',this.value)"
-                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[13px] bg-white
-                       focus:outline-none focus:ring-2 focus:ring-ink transition-all">
-                ${AC_SIZES.map(s =>
-                  `<option value="${s.val}" ${it.size === s.val ? 'selected' : ''}>${s.label}</option>`
-                ).join('')}
+                class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-ink transition-all">
+                ${sizeOptions}
               </select>
             </div>
-            <!-- Qty stepper -->
             <div>
               <label class="block text-[12px] font-medium text-ink mb-1.5">จำนวน (เครื่อง)</label>
               <div class="flex items-center border border-black/[0.12] rounded-lg overflow-hidden bg-white h-9">
-                <button onclick="stepQty(${it.id},-1)"
-                  class="qty-btn w-9 h-full flex items-center justify-center text-muted border-r border-black/[0.08] flex-shrink-0">
+                <button onclick="stepQty(${it.id},-1)" class="qty-btn w-9 h-full flex items-center justify-center text-muted border-r border-black/[0.08] flex-shrink-0 transition-colors">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
                 <input type="number" id="qty-${it.id}" min="1" max="20" value="${it.qty}"
                   onchange="setField(${it.id},'qty',this.value)"
                   class="flex-1 text-center text-[14px] font-medium h-full border-0 focus:outline-none focus:bg-accent/30 transition-colors">
-                <button onclick="stepQty(${it.id},1)"
-                  class="qty-btn w-9 h-full flex items-center justify-center text-muted border-l border-black/[0.08] flex-shrink-0">
+                <button onclick="stepQty(${it.id},1)" class="qty-btn w-9 h-full flex items-center justify-center text-muted border-l border-black/[0.08] flex-shrink-0 transition-colors">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
               </div>
             </div>
           </div>
-
-          <!-- Row price -->
           <div class="mt-3 flex justify-end">
-            <span id="item-price-${it.id}"
-              class="text-[13px] font-semibold text-ink bg-white border border-black/[0.08] rounded-lg px-3 py-1">
+            <span id="item-price-${it.id}" class="text-[13px] font-semibold text-ink bg-white border border-black/[0.08] rounded-lg px-3 py-1">
               ฿${(unitPrice * it.qty).toLocaleString()}
             </span>
           </div>
@@ -487,59 +655,47 @@
       }).join('');
     }
 
-    // ─── PRICE SUMMARY ───
+    // ─── PRICE SUMMARY ────────────────────────────────────────
     function refreshPriceSummary() {
       const bd    = document.getElementById('price-breakdown');
       const total = document.getElementById('price-total');
       const note  = document.getElementById('price-note');
 
       if (items.length === 0) {
-        bd.innerHTML = `
-          <div class="border border-dashed border-black/[0.15] rounded-xl p-6 text-center">
-            <p class="text-[13px] text-muted">เพิ่มรายการบริการเพื่อดูราคาประมาณ</p>
-          </div>`;
-        total.classList.add('hidden');
-        note.classList.add('hidden');
+        bd.innerHTML = `<div class="border border-dashed border-black/[0.15] rounded-xl p-6 text-center"><p class="text-[13px] text-muted">เพิ่มรายการบริการเพื่อดูราคาประมาณ</p></div>`;
+        total.classList.add('hidden'); note.classList.add('hidden');
         return;
       }
 
       let svcTotal = 0;
       const rows = items.map(it => {
-        const price = SERVICES[it.service].prices[it.size] * it.qty;
+        const price = (SERVICES[it.service]?.prices[it.size] || 0) * it.qty;
         svcTotal += price;
         return `
           <div class="flex items-start justify-between gap-3 py-1.5">
             <div class="min-w-0">
-              <p class="text-[13px] text-ink">${SERVICES[it.service].label}${it.qty > 1 ? ` ×${it.qty}` : ''}</p>
-              <p class="text-[11px] text-muted">${AC_SIZES.find(s => s.val === it.size).label}</p>
+              <p class="text-[13px] text-ink">${SERVICES[it.service]?.label || it.service}${it.qty > 1 ? ` ×${it.qty}` : ''}</p>
+              <p class="text-[11px] text-muted">${AC_SIZES.find(s => s.val === it.size)?.label || it.size}</p>
             </div>
             <span class="text-[13px] font-medium text-ink flex-shrink-0">฿${price.toLocaleString()}</span>
           </div>`;
       });
 
-      const distObj  = DISTANCES.find(d => d.val === dist);
+      const distObj   = DISTANCES.find(d => d.val === dist);
       const travelFee = distObj ? distObj.fee : 0;
-      const grandTotal = svcTotal + travelFee;
 
-      const travelRow = distObj
-        ? `<div class="flex items-center justify-between py-1.5">
-             <span class="text-[13px] text-muted">ค่าเดินทาง (${distObj.label})</span>
-             <span class="text-[13px] font-medium text-ink">${travelFee === 0 ? 'ฟรี' : '฿' + travelFee.toLocaleString()}</span>
-           </div>`
-        : '';
+      const travelRow = distObj ? `
+        <div class="flex items-center justify-between py-1.5">
+          <span class="text-[13px] text-muted">ค่าเดินทาง (${distObj.label})</span>
+          <span class="text-[13px] font-medium text-ink">${travelFee === 0 ? 'ฟรี' : '฿' + travelFee.toLocaleString()}</span>
+        </div>` : '';
 
-      bd.innerHTML = `
-        <div class="divide-y divide-black/[0.06]">
-          <div class="pb-1">${rows.join('')}</div>
-          ${travelRow ? `<div class="pt-1">${travelRow}</div>` : ''}
-        </div>`;
-
-      document.getElementById('total-amount').textContent = '฿' + grandTotal.toLocaleString();
-      total.classList.remove('hidden');
-      note.classList.remove('hidden');
+      bd.innerHTML = `<div class="divide-y divide-black/[0.06]"><div class="pb-1">${rows.join('')}</div>${travelRow ? `<div class="pt-1">${travelRow}</div>` : ''}</div>`;
+      document.getElementById('total-amount').textContent = '฿' + (svcTotal + travelFee).toLocaleString();
+      total.classList.remove('hidden'); note.classList.remove('hidden');
     }
 
-    // ─── CREATE BOOKING ───
+    // ─── CREATE BOOKING ───────────────────────────────────────
     function createBooking() {
       const name    = document.getElementById('customer-name').value.trim();
       const phone   = document.getElementById('customer-phone').value.trim();
@@ -549,114 +705,111 @@
       const time    = document.getElementById('booking-time').value;
       const note    = document.getElementById('booking-note').value.trim();
 
-      if (items.length  === 0) return toast('กรุณาเพิ่มรายการบริการอย่างน้อย 1 รายการ');
-      if (!name)               return toast('กรุณากรอกชื่อ–นามสกุลลูกค้า');
-      if (!phone)              return toast('กรุณากรอกเบอร์โทรศัพท์');
-      if (!address)            return toast('กรุณากรอกที่อยู่ / สถานที่ให้บริการ');
-      if (!date)               return toast('กรุณาเลือกวันที่นัดหมาย');
-      if (!time)               return toast('กรุณาเลือกเวลานัดหมาย');
-      if (dist === null)       return toast('กรุณาเลือกระยะทาง');
+      if (!items.length)      return toast('กรุณาเพิ่มรายการบริการอย่างน้อย 1 รายการ');
+      if (!name)              return toast('กรุณากรอกชื่อ–นามสกุลลูกค้า');
+      if (!phone)             return toast('กรุณากรอกเบอร์โทรศัพท์');
+      if (!address)           return toast('กรุณากรอกที่อยู่ / สถานที่ให้บริการ');
+      if (!date)              return toast('กรุณาเลือกวันที่นัดหมาย');
+      if (!time)              return toast('กรุณาเลือกเวลานัดหมาย');
+      if (dist === null)      return toast('กรุณาเลือกระยะทาง');
 
       const distObj    = DISTANCES.find(d => d.val === dist);
-      const svcTotal   = items.reduce((s, it) => s + SERVICES[it.service].prices[it.size] * it.qty, 0);
+      const svcTotal   = items.reduce((s, it) => s + (SERVICES[it.service]?.prices[it.size] || 0) * it.qty, 0);
       const travelFee  = distObj.fee;
       const grandTotal = svcTotal + travelFee;
       const bookingNo  = genBookingNo();
+      const thaiDate   = new Date(date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
 
-      const dateObj  = new Date(date + 'T00:00:00');
-      const thaiDate = dateObj.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
-
-      // Build detail HTML
       const itemRows = items.map(it => `
         <div class="flex justify-between items-start gap-2 py-1">
-          <div>
-            <span>${SERVICES[it.service].label}</span>
-            <span class="text-muted ml-1">(${AC_SIZES.find(s => s.val === it.size).label}${it.qty > 1 ? ` ×${it.qty}` : ''})</span>
-          </div>
-          <span class="font-medium flex-shrink-0">฿${(SERVICES[it.service].prices[it.size] * it.qty).toLocaleString()}</span>
+          <div><span>${SERVICES[it.service]?.label || it.service}</span>
+               <span class="text-muted ml-1">(${AC_SIZES.find(s=>s.val===it.size)?.label || it.size}${it.qty>1?` ×${it.qty}`:''})</span></div>
+          <span class="font-medium flex-shrink-0">฿${((SERVICES[it.service]?.prices[it.size]||0)*it.qty).toLocaleString()}</span>
         </div>`).join('');
 
       document.getElementById('booking-number').textContent = bookingNo;
       document.getElementById('booking-details').innerHTML = `
         <div class="space-y-0 divide-y divide-black/[0.06]">
-          <!-- Customer -->
           <div class="py-3 space-y-1.5">
-            <row class="flex gap-2"><span class="w-20 text-muted flex-shrink-0">ลูกค้า</span><span class="font-medium text-ink">${esc(name)}</span></row>
-            <row class="flex gap-2"><span class="w-20 text-muted flex-shrink-0">โทร</span><span class="font-medium text-ink">${esc(phone)}</span></row>
-            ${contact ? `<row class="flex gap-2"><span class="w-20 text-muted flex-shrink-0">ติดต่อ</span><span class="font-medium text-ink">${esc(contact)}</span></row>` : ''}
-            <row class="flex gap-2 items-start"><span class="w-20 text-muted flex-shrink-0">ที่อยู่</span><span class="font-medium text-ink text-[12px] leading-relaxed">${esc(address)}</span></row>
+            <div class="flex gap-2"><span class="w-20 text-muted flex-shrink-0">ลูกค้า</span><span class="font-medium">${esc(name)}</span></div>
+            <div class="flex gap-2"><span class="w-20 text-muted flex-shrink-0">โทร</span><span class="font-medium">${esc(phone)}</span></div>
+            ${contact?`<div class="flex gap-2"><span class="w-20 text-muted flex-shrink-0">ติดต่อ</span><span class="font-medium">${esc(contact)}</span></div>`:''}
+            <div class="flex gap-2 items-start"><span class="w-20 text-muted flex-shrink-0">ที่อยู่</span><span class="font-medium text-[12px] leading-relaxed">${esc(address)}</span></div>
           </div>
-          <!-- Appointment -->
           <div class="py-3">
-            <row class="flex gap-2 items-start"><span class="w-20 text-muted flex-shrink-0">นัดหมาย</span><span class="font-medium text-ink text-[12px] leading-relaxed">${thaiDate} ${time} น.</span></row>
+            <div class="flex gap-2 items-start"><span class="w-20 text-muted flex-shrink-0">นัดหมาย</span><span class="font-medium text-[12px] leading-relaxed">${thaiDate} ${time} น.</span></div>
           </div>
-          <!-- Service lines -->
           <div class="py-3">
             <p class="text-muted mb-1">รายการบริการ</p>
             ${itemRows}
             <div class="flex justify-between items-center py-1 text-muted">
               <span>ค่าเดินทาง (${distObj.label})</span>
-              <span>${travelFee === 0 ? 'ฟรี' : '฿' + travelFee.toLocaleString()}</span>
+              <span>${travelFee===0?'ฟรี':'฿'+travelFee.toLocaleString()}</span>
             </div>
           </div>
-          <!-- Total -->
           <div class="pt-3 flex justify-between items-center font-semibold">
-            <span class="text-ink">รวมทั้งสิ้น</span>
-            <span class="text-[20px] text-ink">฿${grandTotal.toLocaleString()}</span>
+            <span>รวมทั้งสิ้น</span>
+            <span class="text-[20px]">฿${grandTotal.toLocaleString()}</span>
           </div>
-          ${note ? `<div class="pt-3 text-[12px] text-muted border-t border-black/[0.06]"><span class="font-medium text-ink">หมายเหตุ: </span>${esc(note)}</div>` : ''}
+          ${note?`<div class="pt-3 text-[12px] text-muted border-t border-black/[0.06]"><span class="font-medium text-ink">หมายเหตุ: </span>${esc(note)}</div>`:''}
         </div>`;
 
       document.getElementById('booking-result').classList.remove('hidden');
-
-      // Mobile: scroll to result
       if (window.innerWidth < 1024) {
         setTimeout(() => document.getElementById('booking-result').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
       }
     }
 
-    // ─── HELPERS ───
+    // ─── HELPERS ──────────────────────────────────────────────
     function genBookingNo() {
-      const now  = new Date();
-      const yy   = String(now.getFullYear()).slice(-2);
-      const mm   = String(now.getMonth() + 1).padStart(2, '0');
-      const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
-      return `AC${yy}${mm}-${rand}`;
+      const d = new Date();
+      const yy = String(d.getFullYear()).slice(-2);
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      return `AC${yy}${mm}-${Math.random().toString(36).slice(2,7).toUpperCase()}`;
     }
 
-    function esc(str) {
-      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    function esc(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     function toast(msg) {
       const el = document.createElement('div');
       el.className = 'pointer-events-auto flex items-center gap-2.5 bg-ink text-white text-[13px] font-medium px-4 py-3 rounded-xl shadow-lg fade-in';
-      el.innerHTML = `
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="white"/>
-        </svg>
-        ${msg}`;
+      el.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="white"/></svg>${msg}`;
       const c = document.getElementById('toast-container');
       c.appendChild(el);
-      setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 3000);
+      setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, 3000);
     }
 
-    function printBooking() { window.print(); }
+    function printBooking()  { window.print(); }
 
     function resetForm() {
-      items = [];
-      seq   = 0;
-      dist  = null;
-      ['customer-name','customer-phone','customer-contact','customer-address','booking-note'].forEach(id => {
-        document.getElementById(id).value = '';
-      });
+      items = []; seq = 0; dist = null;
+      ['customer-name','customer-phone','customer-contact','customer-address','booking-note'].forEach(id=>document.getElementById(id).value='');
       document.getElementById('booking-time').value = '';
       document.getElementById('booking-date').value = new Date().toISOString().split('T')[0];
-      document.querySelectorAll('input[name="distance"]').forEach(r => r.checked = false);
+      document.querySelectorAll('input[name="distance"]').forEach(r=>r.checked=false);
       document.getElementById('booking-result').classList.add('hidden');
       addServiceItem();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top:0, behavior:'smooth' });
     }
+
+    // ─── AUTO-REFRESH ─────────────────────────────────────────
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) fetchPricing();
+    });
+    setInterval(fetchPricing, AUTO_REFRESH_MS);
+
+    // ─── INIT ─────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      buildDistanceGrid();
+      buildTimeSlots();
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('booking-date').min   = today;
+      document.getElementById('booking-date').value = today;
+      updateSourceCard(); // show loading state immediately
+      fetchPricing();     // kick off first load
+    });
   </script>
 </body>
 </html>
