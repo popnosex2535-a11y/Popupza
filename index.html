@@ -255,6 +255,19 @@
           <div id="pricing-preview" class="hidden mt-3 overflow-x-auto">
             <table id="pricing-table" class="w-full text-[11px] border-collapse"></table>
           </div>
+
+          <!-- Debug panel (shown when fallback) -->
+          <div id="debug-panel" class="hidden mt-3">
+            <button onclick="toggleDebug()" class="flex items-center gap-1.5 text-[11px] text-muted hover:text-ink transition-colors w-full text-left">
+              <svg id="debug-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              <span>ดูข้อมูล CSV ที่ได้รับ (debug)</span>
+            </button>
+            <div id="debug-content" class="hidden mt-2">
+              <div id="debug-error" class="hidden text-[11px] text-red-500 mb-2 font-medium"></div>
+              <pre id="debug-raw" class="text-[10px] bg-[rgb(249,249,247)] border border-black/[0.08] rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all text-muted max-h-40 overflow-y-auto"></pre>
+              <p class="text-[10px] text-muted/60 mt-1">แถวแรกต้องเป็น: BTU/บริการ, 6000, 9000, 12000, … | แถวถัดไป: wash, 700, 900, 1100, …</p>
+            </div>
+          </div>
         </div>
 
         <!-- Booking result -->
@@ -405,15 +418,20 @@
     }
 
     // ─── FETCH PRICING ────────────────────────────────────────
+    let lastRawCSV = '';
+    let lastFetchError = '';
+
     async function fetchPricing() {
       loadState = 'loading';
+      lastFetchError = '';
       setRefreshSpinning(true);
       updateSourceCard();
 
       try {
         const res = await fetch(SHEET_CSV_URL, { cache: 'no-store' });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
         const text = await res.text();
+        lastRawCSV = text;
         const rows = parseCSV(text);
         const ok   = buildPricing(rows);
 
@@ -421,19 +439,20 @@
           loadState   = 'ok';
           lastUpdated = new Date();
         } else {
-          // CSV parsed but wrong format — use fallback
+          // CSV got but format wrong — show debug
           SERVICES = FALLBACK_SERVICES;
           AC_SIZES = FALLBACK_SIZES;
           loadState = 'fallback';
           lastUpdated = new Date();
+          lastFetchError = 'ดึง CSV ได้แต่ format ไม่ตรง — ดูข้อมูลที่ได้รับด้านล่าง';
         }
       } catch (err) {
-        // Network error — use fallback
         SERVICES = FALLBACK_SERVICES;
         AC_SIZES = FALLBACK_SIZES;
-        loadState   = 'fallback';
-        lastUpdated = new Date();
-        console.warn('Pricing fetch failed, using fallback:', err.message);
+        loadState     = 'fallback';
+        lastUpdated   = new Date();
+        lastFetchError = err.message;
+        console.warn('Pricing fetch failed:', err.message);
       }
 
       setRefreshSpinning(false);
@@ -515,6 +534,28 @@
           </tr></thead>
           <tbody>${rows}</tbody>`;
       }
+
+      // Debug panel
+      const debugPanel = document.getElementById('debug-panel');
+      const debugErrEl = document.getElementById('debug-error');
+      const debugRaw   = document.getElementById('debug-raw');
+      if (loadState === 'fallback') {
+        debugPanel.classList.remove('hidden');
+        if (lastFetchError) { debugErrEl.textContent = 'ข้อผิดพลาด: ' + lastFetchError; debugErrEl.classList.remove('hidden'); }
+        else debugErrEl.classList.add('hidden');
+        // Show first 20 rows of raw CSV for diagnosis
+        const preview5 = lastRawCSV ? lastRawCSV.split('\n').slice(0, 8).join('\n') : '(ไม่มีข้อมูล)';
+        debugRaw.textContent = preview5 || '(ว่างเปล่า)';
+      } else {
+        debugPanel.classList.add('hidden');
+      }
+    }
+
+    function toggleDebug() {
+      const content  = document.getElementById('debug-content');
+      const chevron  = document.getElementById('debug-chevron');
+      const isHidden = content.classList.toggle('hidden');
+      chevron.style.transform = isHidden ? '' : 'rotate(180deg)';
     }
 
     function setRefreshSpinning(on) {
