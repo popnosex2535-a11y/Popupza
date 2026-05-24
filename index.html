@@ -61,9 +61,17 @@
         <span class="font-semibold text-[15px] text-ink">Popupza Air Service</span>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Live pricing status badge -->
-        <div id="status-badge" class="hidden items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-full border"></div>
-        <span class="text-[12px] text-muted font-medium hidden sm:block">ระบบจองบริการแอร์</span>
+        <div class="flex items-center gap-2">
+          <!-- Live pricing status badge -->
+          <div id="status-badge" class="hidden items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-full border"></div>
+          <button onclick="openSettings()" class="no-print w-8 h-8 flex items-center justify-center text-muted hover:text-ink hover:bg-accent rounded-lg transition-colors" title="ตั้งค่า Sheet URL">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
+          <span class="text-[12px] text-muted font-medium hidden sm:block">ระบบจองบริการแอร์</span>
+        </div>
       </div>
     </div>
   </header>
@@ -308,23 +316,85 @@
 
   <div id="toast-container" class="fixed bottom-6 inset-x-4 flex justify-center z-50 pointer-events-none no-print"></div>
 
+  <!-- ═══ SETTINGS MODAL ═══ -->
+  <div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 no-print">
+    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeSettings()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 fade-in">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-[18px] font-semibold text-ink">ตั้งค่า Google Sheets URL</h3>
+        <button onclick="closeSettings()" class="w-8 h-8 flex items-center justify-center text-muted hover:text-ink hover:bg-accent rounded-lg transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-[14px] font-medium text-ink mb-2">
+            URL ของ Google Sheets (pub?output=csv)
+          </label>
+          <textarea id="sheet-url-input" rows="3"
+            placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?output=csv"
+            class="w-full px-3 py-2 border border-black/[0.12] rounded-lg text-[13px] placeholder:text-muted bg-white focus:outline-none focus:ring-2 focus:ring-ink transition-all resize-none font-mono"></textarea>
+        </div>
+
+        <!-- How-to steps -->
+        <div class="bg-[rgb(249,249,247)] rounded-xl p-4 text-[12px] text-muted space-y-1.5">
+          <p class="font-semibold text-ink mb-2">วิธีรับ URL ที่ถูกต้อง:</p>
+          <p>1. เปิด Google Sheets ที่มีตารางราคา</p>
+          <p>2. ไปที่ <span class="font-medium text-ink">ไฟล์ → แชร์ → เผยแพร่บนเว็บ</span></p>
+          <p>3. เลือก Sheet ที่มีราคา → เลือก <span class="font-medium text-ink">CSV</span></p>
+          <p>4. กด <span class="font-medium text-ink">เผยแพร่</span> แล้ว copy URL มาวางที่นี่</p>
+        </div>
+
+        <!-- Expected format reminder -->
+        <div class="border border-black/[0.08] rounded-xl overflow-hidden">
+          <p class="text-[11px] font-medium text-muted px-3 py-2 bg-[rgb(249,249,247)] border-b border-black/[0.08]">รูปแบบ Sheet ที่ถูกต้อง</p>
+          <table class="w-full text-[11px]">
+            <thead class="bg-[rgb(249,249,247)]">
+              <tr><th class="px-3 py-1.5 text-left text-muted font-medium">บริการ/BTU</th><th class="px-3 py-1.5 text-center text-muted font-medium">6000</th><th class="px-3 py-1.5 text-center text-muted font-medium">9000</th><th class="px-3 py-1.5 text-center text-muted font-medium">12000</th><th class="px-3 py-1.5 text-center text-muted font-medium">…</th></tr>
+            </thead>
+            <tbody class="divide-y divide-black/[0.06]">
+              <tr><td class="px-3 py-1.5 font-medium">wash</td><td class="px-3 py-1.5 text-center">700</td><td class="px-3 py-1.5 text-center">900</td><td class="px-3 py-1.5 text-center">1100</td><td class="px-3 py-1.5 text-center text-muted">…</td></tr>
+              <tr><td class="px-3 py-1.5 font-medium">repair</td><td class="px-3 py-1.5 text-center">1000</td><td class="px-3 py-1.5 text-center">1200</td><td class="px-3 py-1.5 text-center">1500</td><td class="px-3 py-1.5 text-center text-muted">…</td></tr>
+              <tr><td class="px-3 py-1.5 font-medium">install</td><td class="px-3 py-1.5 text-center">1500</td><td class="px-3 py-1.5 text-center">1800</td><td class="px-3 py-1.5 text-center">2200</td><td class="px-3 py-1.5 text-center text-muted">…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-5">
+        <button onclick="saveSettings()" class="flex-1 h-10 bg-ink text-white text-[14px] font-medium rounded-lg hover:bg-ink/90 transition-colors">
+          บันทึกและโหลดราคาใหม่
+        </button>
+        <button onclick="resetSettings()" class="h-10 px-4 bg-white text-muted text-[13px] font-medium border border-black/[0.12] rounded-lg hover:bg-accent transition-colors">
+          รีเซ็ต
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══ SCRIPT ═══ -->
   <script>
     // ─── CONFIG ───────────────────────────────────────────────
-    const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSXP1tkgA7mO-SQb1n47Fq8rcaNJxCHqQ6mUfE9UZ_XrQQOhPjJFkifezjZ2f1H6jes3LayXXXO3pRw/pub?output=csv';
+    const DEFAULT_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSXP1tkgA7mO-SQb1n47Fq8rcaNJxCHqQ6mUfE9UZ_XrQQOhPjJFkifezjZ2f1H6jes3LayXXXO3pRw/pub?output=csv';
     const AUTO_REFRESH_MS = 3 * 60 * 1000; // 3 minutes
 
-    // Fallback prices (used if sheet unreachable)
+    function getSheetURL() {
+      return localStorage.getItem('sheetCSVUrl') || DEFAULT_SHEET_CSV_URL;
+    }
+
+    // Fallback prices — matches actual sheet data from screenshot
     const FALLBACK_SERVICES = {
-      wash:    { label: 'ล้างแอร์',     prices: { '9000': 500,  '12000': 600,  '18000': 800,  '24000': 1000 } },
-      repair:  { label: 'ซ่อมแอร์',    prices: { '9000': 800,  '12000': 1000, '18000': 1200, '24000': 1500 } },
-      install: { label: 'ติดตั้งแอร์', prices: { '9000': 1500, '12000': 1800, '18000': 2200, '24000': 2800 } },
+      wash:    { label: 'ล้างแอร์',     prices: { '6000': 700,  '9000': 900,  '12000': 1100, '18000': 1400, '36000': 1400 } },
+      repair:  { label: 'ซ่อมแอร์',    prices: { '6000': 1000, '9000': 1200, '12000': 1500, '18000': 1800, '36000': 1800 } },
+      install: { label: 'ติดตั้งแอร์', prices: { '6000': 1500, '9000': 1800, '12000': 2200, '18000': 2800, '36000': 4500 } },
     };
     const FALLBACK_SIZES = [
+      { val: '6000',  label: '6,000 BTU'  },
       { val: '9000',  label: '9,000 BTU'  },
       { val: '12000', label: '12,000 BTU' },
       { val: '18000', label: '18,000 BTU' },
-      { val: '24000', label: '24,000 BTU' },
+      { val: '36000', label: '36,000 BTU' },
     ];
 
     // Map English/shorthand keys → Thai display labels
@@ -428,7 +498,7 @@
       updateSourceCard();
 
       try {
-        const res = await fetch(SHEET_CSV_URL, { cache: 'no-store' });
+        const res = await fetch(getSheetURL(), { cache: 'no-store' });
         if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
         const text = await res.text();
         lastRawCSV = text;
@@ -823,6 +893,37 @@
     }
 
     function printBooking()  { window.print(); }
+
+    // ─── SETTINGS ─────────────────────────────────────────────
+    function openSettings() {
+      const input = document.getElementById('sheet-url-input');
+      input.value = getSheetURL();
+      document.getElementById('settings-modal').classList.remove('hidden');
+    }
+
+    function closeSettings() {
+      document.getElementById('settings-modal').classList.add('hidden');
+    }
+
+    function saveSettings() {
+      const url = document.getElementById('sheet-url-input').value.trim();
+      if (!url) return toast('กรุณากรอก URL ก่อน');
+      if (!url.includes('docs.google.com') && !url.includes('pub?output=csv')) {
+        return toast('URL ไม่ถูกต้อง — ต้องเป็น Google Sheets pub?output=csv');
+      }
+      // Ensure CSV format
+      const csvUrl = url.includes('output=csv') ? url : url + (url.includes('?') ? '&' : '?') + 'output=csv';
+      localStorage.setItem('sheetCSVUrl', csvUrl);
+      closeSettings();
+      toast('บันทึกแล้ว กำลังโหลดราคาใหม่…');
+      fetchPricing();
+    }
+
+    function resetSettings() {
+      localStorage.removeItem('sheetCSVUrl');
+      document.getElementById('sheet-url-input').value = DEFAULT_SHEET_CSV_URL;
+      toast('รีเซ็ต URL เป็นค่าเริ่มต้นแล้ว');
+    }
 
     function resetForm() {
       items = []; seq = 0; dist = null;
