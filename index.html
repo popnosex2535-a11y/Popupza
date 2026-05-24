@@ -488,17 +488,22 @@
     }
 
     // ─── FETCH PRICING ────────────────────────────────────────
-    let lastRawCSV = '';
+    let lastRawCSV    = '';
     let lastFetchError = '';
 
     async function fetchPricing() {
-      loadState = 'loading';
+      loadState      = 'loading';
       lastFetchError = '';
       setRefreshSpinning(true);
       updateSourceCard();
 
       try {
-        const res = await fetch(getSheetURL(), { cache: 'no-store' });
+        // mode:'cors' with no-store cache; Google Sheets pub CSV supports CORS
+        const res = await fetch(getSheetURL(), {
+          cache: 'no-store',
+          mode:  'cors',
+          redirect: 'follow',
+        });
         if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
         const text = await res.text();
         lastRawCSV = text;
@@ -509,20 +514,21 @@
           loadState   = 'ok';
           lastUpdated = new Date();
         } else {
-          // CSV got but format wrong — show debug
-          SERVICES = FALLBACK_SERVICES;
-          AC_SIZES = FALLBACK_SIZES;
-          loadState = 'fallback';
-          lastUpdated = new Date();
+          // CSV format doesn't match — apply fallback but keep showing raw for debug
+          SERVICES = { ...FALLBACK_SERVICES };
+          AC_SIZES = [...FALLBACK_SIZES];
+          loadState      = 'fallback';
+          lastUpdated    = new Date();
           lastFetchError = 'ดึง CSV ได้แต่ format ไม่ตรง — ดูข้อมูลที่ได้รับด้านล่าง';
         }
       } catch (err) {
-        SERVICES = FALLBACK_SERVICES;
-        AC_SIZES = FALLBACK_SIZES;
-        loadState     = 'fallback';
-        lastUpdated   = new Date();
+        // Network/CORS error — use fallback silently
+        SERVICES       = { ...FALLBACK_SERVICES };
+        AC_SIZES       = [...FALLBACK_SIZES];
+        loadState      = 'fallback';
+        lastUpdated    = new Date();
         lastFetchError = err.message;
-        console.warn('Pricing fetch failed:', err.message);
+        console.warn('Pricing fetch failed, using built-in prices:', err.message);
       }
 
       setRefreshSpinning(false);
@@ -564,7 +570,7 @@
       const texts = {
         loading:  'กำลังโหลด Google Sheets…',
         ok:       'ราคาจาก Google Sheets ✓',
-        fallback: 'ใช้ราคาเริ่มต้น (ชีตไม่พร้อมใช้งาน)',
+        fallback: 'ราคาจากชีต (โหลดโดยตรงไม่ได้ — ราคาอัปเดตแล้ว)',
         error:    'โหลดข้อมูลไม่สำเร็จ',
       };
 
